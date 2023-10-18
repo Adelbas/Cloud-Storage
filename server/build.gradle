@@ -1,0 +1,21 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group = 'ru.adel'
+version = '1.0-SNAPSHOT'
+mainClassName = 'ru.adel.server.ServerApplication'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(path: ':common-commands')
+    compileOnly(project(path: ':common-commands'))
+}
+
+test {
+    useJUnitPlatform()
+}
