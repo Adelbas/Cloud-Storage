@@ -5,7 +5,10 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import ru.adel.Command;
 import ru.adel.CommandType;
-import ru.adel.encoder.impl.*;
+import ru.adel.encoder.impl.AuthRequestEncoder;
+import ru.adel.encoder.impl.AuthResponseEncoder;
+import ru.adel.encoder.impl.LogoutRequestEncoder;
+import ru.adel.encoder.impl.UnknownCmdEncoder;
 
 import java.util.EnumMap;
 import java.util.Map;

@@ -2,6 +2,7 @@ package ru.adel.server.service;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelPipeline;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -71,7 +72,11 @@ class AuthenticationServiceTest {
 
         Command actualResponse = authenticationService.authenticate(channel, authRequest);
 
-        assertThat(actualResponse).isEqualTo(expectedResponse);
+        Assertions.assertAll(
+                () -> assertThat(actualResponse.getCommandType()).isEqualTo(expectedResponse.getCommandType()),
+                () -> assertThat(((AuthResponse)actualResponse).isAuthenticated()).isEqualTo(expectedResponse.isAuthenticated()),
+                () -> assertThat(((AuthResponse)actualResponse).getAttemptsLeft()).isEqualTo(expectedResponse.getAttemptsLeft())
+        );
     }
 
     @Test

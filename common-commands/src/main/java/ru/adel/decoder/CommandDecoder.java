@@ -5,8 +5,10 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ReplayingDecoder;
 import ru.adel.Command;
 import ru.adel.CommandType;
-import ru.adel.decoder.impl.*;
-import ru.adel.encoder.Encoder;
+import ru.adel.decoder.impl.AuthRequestDecoder;
+import ru.adel.decoder.impl.AuthResponseDecoder;
+import ru.adel.decoder.impl.LogoutRequestDecoder;
+import ru.adel.decoder.impl.UnknownCmdDecoder;
 
 import java.util.EnumMap;
 import java.util.List;
