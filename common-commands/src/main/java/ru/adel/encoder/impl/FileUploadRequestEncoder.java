@@ -13,6 +13,8 @@ public class FileUploadRequestEncoder implements Encoder {
     public void encode(ChannelHandlerContext ctx, Command msg, ByteBuf out) {
         FileUploadRequest fileUploadRequest = (FileUploadRequest) msg;
         out.writeInt(msg.getCommandType().ordinal());
+        out.writeInt(fileUploadRequest.getFilename().length());
+        out.writeCharSequence(fileUploadRequest.getFilename(), StandardCharsets.UTF_8);
         out.writeInt(fileUploadRequest.getSize());
 //        out.writeInt(fileUploadRequest.getFilename().length());
 //        out.writeLong(fileUploadRequest.getSize());

@@ -21,10 +21,16 @@ public class FileUploadRequestDecoder implements Decoder {
 //        in.readBytes(bytes);
 //        fileUploadRequest.setData(bytes);
 //        out.add(fileUploadRequest);
+        int filenameSize = in.readInt();
+        String filename = String.valueOf(in.readCharSequence(filenameSize, StandardCharsets.UTF_8));
         int size = in.readInt();
         byte[] content = new byte[size];
         in.readBytes(content);
-        FileUploadRequest fileUploadRequest = FileUploadRequest.builder().data(content).build();
+        FileUploadRequest fileUploadRequest = FileUploadRequest.builder()
+                .filename(filename)
+                .size(size)
+                .data(content)
+                .build();
         out.add(fileUploadRequest);
     }
 }

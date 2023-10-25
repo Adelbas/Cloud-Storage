@@ -5,6 +5,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import ru.adel.Command;
+import ru.adel.server.command.CommandService;
 import ru.adel.server.command.security.SecurityCommandService;
 import ru.adel.server.service.ChannelStorageService;
 
@@ -16,7 +17,7 @@ import ru.adel.server.service.ChannelStorageService;
 @RequiredArgsConstructor
 public class AuthenticationHandler extends SimpleChannelInboundHandler<Command> {
 
-    private final SecurityCommandService securityCommandService;
+    private final CommandService securityCommandService;
 
     private final ChannelStorageService channelStorageService;
 
@@ -34,7 +35,7 @@ public class AuthenticationHandler extends SimpleChannelInboundHandler<Command> 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Command command) {
         if (channelStorageService.isChannelAuthenticated(ctx.channel()) &&
-                !securityCommandService.isSecurityCommand(command)) {
+                !securityCommandService.isBelongsToHandler(command)) {
             ctx.fireChannelRead(command);
             return;
         }

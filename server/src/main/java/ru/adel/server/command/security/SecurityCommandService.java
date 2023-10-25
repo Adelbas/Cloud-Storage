@@ -6,6 +6,7 @@ import ru.adel.Command;
 import ru.adel.CommandType;
 import ru.adel.command.UnknownCmdResponse;
 import ru.adel.server.command.CommandExecutor;
+import ru.adel.server.command.CommandService;
 import ru.adel.server.command.security.executors.AuthRequestExecutor;
 import ru.adel.server.command.security.executors.LogoutRequestExecutor;
 import ru.adel.server.service.AuthenticationService;
@@ -18,9 +19,9 @@ import java.util.Map;
  * Class represents service that executes security types commands and stores executor for each of them in EnumMap
  */
 @Slf4j
-public class SecurityCommandService {
+public class SecurityCommandService extends CommandService {
 
-    private final Map<CommandType, CommandExecutor> executors = new EnumMap<>(CommandType.class);
+//    private final Map<CommandType, CommandExecutor> executors = new EnumMap<>(CommandType.class);
 
     /**
      * Constructor that create and save executors for each command
@@ -29,8 +30,8 @@ public class SecurityCommandService {
      * @param channelStorageService channel storage service
      */
     public SecurityCommandService(AuthenticationService authenticationService, ChannelStorageService channelStorageService) {
-        executors.put(CommandType.AUTHENTICATE_REQUEST, new AuthRequestExecutor(authenticationService, channelStorageService));
-        executors.put(CommandType.LOGOUT_REQUEST, new LogoutRequestExecutor(channelStorageService));
+        this.executors.put(CommandType.AUTHENTICATE_REQUEST, new AuthRequestExecutor(authenticationService, channelStorageService));
+        this.executors.put(CommandType.LOGOUT_REQUEST, new LogoutRequestExecutor(channelStorageService));
     }
 
     /**
@@ -39,9 +40,9 @@ public class SecurityCommandService {
      * @param command command to check
      * @return true if belongs else false
      */
-    public boolean isSecurityCommand(Command command) {
-        return executors.get(command.getCommandType()) != null;
-    }
+//    public boolean isSecurityCommand(Command command) {
+//        return executors.get(command.getCommandType()) != null;
+//    }
 
     /**
      * Handle command using its executor.
@@ -50,13 +51,13 @@ public class SecurityCommandService {
      * @param ctx     channel handler context
      * @param command command to execute
      */
-    public void handleCommand(ChannelHandlerContext ctx, Command command) {
-        CommandExecutor executor = executors.get(command.getCommandType());
-        if (executor == null) {
-            log.info("No executor found in authentication handler to command from " + ctx.channel().id());
-            ctx.writeAndFlush(UnknownCmdResponse.builder().build());
-        } else {
-            executor.execute(ctx, command);
-        }
-    }
+//    public void handleCommand(ChannelHandlerContext ctx, Command command) {
+//        CommandExecutor executor = executors.get(command.getCommandType());
+//        if (executor == null) {
+//            log.info("No executor found in {} to command from " + ctx.channel().id(), this.getClass().getName());
+//            ctx.writeAndFlush(UnknownCmdResponse.builder().build());
+//        } else {
+//            executor.execute(ctx, command);
+//        }
+//    }
 }

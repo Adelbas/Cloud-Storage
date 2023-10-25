@@ -24,12 +24,15 @@ public class FileUploadRequest extends Command {
 //        this.data = data;
 //    }
 
+    private String filename;
+
     private int size;
 
     private byte[] data;
 
-    public FileUploadRequest(int size, byte[] data) {
+    public FileUploadRequest(String filename, int size, byte[] data) {
         super(CommandType.FILE_UPLOAD_REQUEST);
+        this.filename = filename;
         this.data = data;
         this.size = size;
     }

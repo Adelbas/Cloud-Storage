@@ -32,6 +32,8 @@ import java.util.ResourceBundle;
 @Slf4j
 public class CloudStorageController implements Initializable, CommandExecutor {
 
+    private static final int MAX_BUFFER_SIZE = 100000000;
+
     /**
      * Files from this path are displayed to user in file chooser.
      * As a default it is user's desktop path.
@@ -81,13 +83,6 @@ public class CloudStorageController implements Initializable, CommandExecutor {
     @FXML
     private void onUploadButtonClick() {
         File file = fileChooser.showOpenDialog(new Stage());
-        log.info(file.toString());
-
-//        byte[] data = new byte[Integer.MAX_VALUE-10];
-//        Random random = new Random();
-//        random.nextBytes(data);
-//        int read = data.length;
-
         byte[] data = new byte[(int)file.length()];
         int read = 0;
         try (FileInputStream fileInputStream = new FileInputStream(file)){
@@ -99,10 +94,12 @@ public class CloudStorageController implements Initializable, CommandExecutor {
         log.info(String.valueOf(read));
 
         FileUploadRequest fileUploadRequest = FileUploadRequest.builder()
+                .filename(file.getName())
                 .size(read)
                 .data(data)
                 .build();
 
+        network.sendCommand(fileUploadRequest);
 //        FileUploadRequest fileUploadRequest = FileUploadRequest.builder()
 //                .filename(file.getName())
 //                .size(file.length())
@@ -117,7 +114,6 @@ public class CloudStorageController implements Initializable, CommandExecutor {
 //        log.info(fileUploadRequest.getFilename());
 //        log.info(String.valueOf(fileUploadRequest.getSize()));
 //        log.info(String.valueOf(fileUploadRequest.getData().length));
-        network.sendCommand(fileUploadRequest);
     }
 
     @FXML
