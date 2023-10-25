@@ -1,0 +1,5 @@
+rootProject.name = 'cloud-storage-netty'
+include 'server'
+include 'client'
+include 'common-commands'
+
