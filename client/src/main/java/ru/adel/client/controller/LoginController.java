@@ -85,6 +85,7 @@ public class LoginController implements Initializable, CommandExecutor {
         }
         AuthResponse authResponse = (AuthResponse) command;
         if (authResponse.isAuthenticated()) {
+            network.setUser(usernameField.getText());
             ClientUtils.switchScene("cloud-storage.fxml");
         } else {
             showInvalidCredits(authResponse.getAttemptsLeft());

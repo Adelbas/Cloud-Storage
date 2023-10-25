@@ -38,6 +38,8 @@ public class Network {
 
     private CommandExecutor commandExecutor;
 
+    private String user;
+
     private static volatile Network INSTANCE;
 
     /**

@@ -26,6 +26,7 @@ public class CommandEncoder extends MessageToByteEncoder<Command> {
         commandEncoders.put(CommandType.AUTHENTICATE_RESPONSE, new AuthResponseEncoder());
         commandEncoders.put(CommandType.LOGOUT_REQUEST, new LogoutRequestEncoder());
         commandEncoders.put(CommandType.UNKNOWN_COMMAND_RESPONSE, new UnknownCmdEncoder());
+        commandEncoders.put(CommandType.FILE_UPLOAD_REQUEST, new FileUploadRequestEncoder());
     }
 
     @Override

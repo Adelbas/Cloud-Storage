@@ -2,6 +2,8 @@ package ru.adel.decoder;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.ByteToMessageDecoder;
+import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.handler.codec.ReplayingDecoder;
 import ru.adel.Command;
 import ru.adel.CommandType;
@@ -28,6 +30,7 @@ public class CommandDecoder extends ReplayingDecoder<Command> {
         commandDecoders.put(CommandType.AUTHENTICATE_RESPONSE, new AuthResponseDecoder());
         commandDecoders.put(CommandType.LOGOUT_REQUEST, new LogoutRequestDecoder());
         commandDecoders.put(CommandType.UNKNOWN_COMMAND_RESPONSE, new UnknownCmdDecoder());
+        commandDecoders.put(CommandType.FILE_UPLOAD_REQUEST, new FileUploadRequestDecoder());
     }
 
     @Override
