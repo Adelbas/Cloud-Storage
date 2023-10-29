@@ -10,13 +10,19 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import lombok.extern.slf4j.Slf4j;
 import ru.adel.decoder.CommandDecoder;
 import ru.adel.encoder.CommandEncoder;
-import ru.adel.server.command.security.SecurityCommandService;
+import ru.adel.server.command.CommandHandler;
+import ru.adel.server.command.file.FileCommandHandler;
+import ru.adel.server.command.security.SecurityCommandHandler;
 import ru.adel.server.handler.AuthenticationHandler;
 import ru.adel.server.handler.FileHandler;
 import ru.adel.server.repository.UserRepository;
 import ru.adel.server.repository.UserRepositoryImpl;
 import ru.adel.server.service.AuthenticationService;
 import ru.adel.server.service.ChannelStorageService;
+import ru.adel.server.service.FileService;
+
+import java.io.File;
+import java.nio.file.Paths;
 
 /**
  * Class that represents server starting
@@ -26,7 +32,8 @@ public class Server {
 
     private final String host;
     private final int port;
-    private final SecurityCommandService securityCommandService;
+    private final CommandHandler securityCommandHandler;
+    private final CommandHandler fileCommandHandler;
     private final ChannelStorageService channelStorageService;
 
     /**
@@ -43,7 +50,9 @@ public class Server {
         UserRepository userRepository = new UserRepositoryImpl();
         channelStorageService = new ChannelStorageService(maxAuthenticationAttempts);
         AuthenticationService authenticationService = new AuthenticationService(userRepository, channelStorageService);
-        securityCommandService = new SecurityCommandService(authenticationService, channelStorageService);
+        securityCommandHandler = new SecurityCommandHandler(authenticationService, channelStorageService);
+        FileService fileService = new FileService(channelStorageService);
+        fileCommandHandler = new FileCommandHandler(fileService);
     }
 
     /**
@@ -62,8 +71,8 @@ public class Server {
                             socketChannel.pipeline().addLast(
                                     new CommandDecoder(),
                                     new CommandEncoder(),
-                                    new AuthenticationHandler(securityCommandService, channelStorageService),
-                                    new FileHandler()
+                                    new AuthenticationHandler(securityCommandHandler, channelStorageService),
+                                    new FileHandler(fileCommandHandler)
                             );
                         }
                     });

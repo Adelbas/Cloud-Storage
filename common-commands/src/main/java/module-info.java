@@ -9,4 +9,5 @@ module cloud.storage.netty.common.commands {
     exports ru.adel.decoder;
     exports ru.adel.encoder;
     exports ru.adel.encoder.impl;
+    exports ru.adel.decoder.impl;
 }

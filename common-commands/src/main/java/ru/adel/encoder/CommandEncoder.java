@@ -26,11 +26,17 @@ public class CommandEncoder extends MessageToByteEncoder<Command> {
         commandEncoders.put(CommandType.AUTHENTICATE_RESPONSE, new AuthResponseEncoder());
         commandEncoders.put(CommandType.LOGOUT_REQUEST, new LogoutRequestEncoder());
         commandEncoders.put(CommandType.UNKNOWN_COMMAND_RESPONSE, new UnknownCmdEncoder());
-        commandEncoders.put(CommandType.FILE_UPLOAD_REQUEST, new FileUploadRequestEncoder());
+        commandEncoders.put(CommandType.FILE_MESSAGE, new FileMessageEncoder());
+        commandEncoders.put(CommandType.FILES_GET_REQUEST, new FilesGetRequestEncoder());
+        commandEncoders.put(CommandType.FILES_GET_RESPONSE, new FilesGetResponseEncoder());
+        commandEncoders.put(CommandType.FILE_DOWNLOAD_REQUEST, new FileDownloadRequestEncoder());
+        commandEncoders.put(CommandType.CREATE_FOLDER_REQUEST, new CreateFolderRequestEncoder());
+        commandEncoders.put(CommandType.COPY_PASTE_REQUEST, new CopyPasteRequestEncoder());
+        commandEncoders.put(CommandType.DELETE_FILE_REQUEST, new DeleteFileRequestEncoder());
     }
 
     @Override
-    protected void encode(ChannelHandlerContext ctx, Command msg, ByteBuf out) {
+    protected void encode(ChannelHandlerContext ctx, Command msg, ByteBuf out) throws Exception {
         if (msg == null) {
             return;
         }

@@ -2,13 +2,11 @@ package ru.adel.decoder;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.ByteToMessageDecoder;
-import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.handler.codec.ReplayingDecoder;
 import ru.adel.Command;
 import ru.adel.CommandType;
 import ru.adel.decoder.impl.*;
-import ru.adel.encoder.Encoder;
+import ru.adel.decoder.impl.FileDownloadRequestDecoder;
 
 import java.util.EnumMap;
 import java.util.List;
@@ -30,11 +28,17 @@ public class CommandDecoder extends ReplayingDecoder<Command> {
         commandDecoders.put(CommandType.AUTHENTICATE_RESPONSE, new AuthResponseDecoder());
         commandDecoders.put(CommandType.LOGOUT_REQUEST, new LogoutRequestDecoder());
         commandDecoders.put(CommandType.UNKNOWN_COMMAND_RESPONSE, new UnknownCmdDecoder());
-        commandDecoders.put(CommandType.FILE_UPLOAD_REQUEST, new FileUploadRequestDecoder());
+        commandDecoders.put(CommandType.FILES_GET_REQUEST, new FilesGetRequestDecoder());
+        commandDecoders.put(CommandType.FILES_GET_RESPONSE, new FilesGetResponseDecoder());
+        commandDecoders.put(CommandType.FILE_MESSAGE, new FileMessageDecoder());
+        commandDecoders.put(CommandType.FILE_DOWNLOAD_REQUEST, new FileDownloadRequestDecoder());
+        commandDecoders.put(CommandType.CREATE_FOLDER_REQUEST, new CreateFolderRequestDecoder());
+        commandDecoders.put(CommandType.COPY_PASTE_REQUEST, new CopyPasteRequestDecoder());
+        commandDecoders.put(CommandType.DELETE_FILE_REQUEST, new DeleteFileRequestDecoder());
     }
 
     @Override
-    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) {
+    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
         if (in == null) {
             return;
         }

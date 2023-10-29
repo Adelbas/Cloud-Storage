@@ -33,7 +33,7 @@ public class ClientHandler extends SimpleChannelInboundHandler<Command> {
      */
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Command msg) {
-        log.info("Received command from channel " + ctx.channel().id() + ": " + msg.toString());
+        log.info("Received command {} from channel {}", msg.getCommandType(), ctx.channel().id());
         Platform.runLater(() -> commandExecutor.execute(msg));
     }
 

@@ -7,6 +7,7 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
 
 <VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="480.0" prefWidth="640.0" spacing="10.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.adel.client.controller.CloudStorageController">
     <children>
@@ -15,30 +16,31 @@
                 <VBox alignment="CENTER" maxWidth="1.7976931348623157E308" prefHeight="380.0" prefWidth="140.0" spacing="30.0">
                     <children>
                   <ProgressBar prefHeight="18.0" prefWidth="101.0" progress="0.18" />
-                        <Button onAction="#onUploadButtonClick" mnemonicParsing="false" prefWidth="100.0" text="Upload &gt;&gt;" />
-                        <Button onAction="#onDownloadButtonClick" mnemonicParsing="false" prefWidth="100.0" text="&lt;&lt; Download" />
-                        <Button onAction="#onCopyButtonClick" mnemonicParsing="false" prefWidth="100.0" text="Copy" />
-                        <Button onAction="#onPasteButtonClick" mnemonicParsing="false" prefWidth="100.0" text="Paste" />
-                        <Button onAction="#onDeleteButtonClick" mnemonicParsing="false" prefWidth="100.0" text="Delete" />
+                        <Button mnemonicParsing="false" onAction="#onUploadButtonClick" prefWidth="100.0" text="Upload &gt;&gt;" />
+                        <Button mnemonicParsing="false" onAction="#onDownloadButtonClick" prefWidth="100.0" text="&lt;&lt; Download" />
+                        <Button mnemonicParsing="false" onAction="#onNewFolderButtonClick" prefWidth="100.0" text="New Folder" />
+                        <Button mnemonicParsing="false" onAction="#onCopyButtonClick" prefWidth="100.0" text="Copy" />
+                        <Button mnemonicParsing="false" onAction="#onPasteButtonClick" prefWidth="100.0" text="Paste" />
+                        <Button mnemonicParsing="false" onAction="#onDeleteButtonClick" prefWidth="100.0" text="Delete" />
                     </children>
                 </VBox>
                 <VBox prefHeight="480.0" prefWidth="250.0" spacing="10.0" HBox.hgrow="ALWAYS">
                     <children>
                         <HBox alignment="BOTTOM_CENTER" prefHeight="40.0" prefWidth="250.0" spacing="10.0">
                             <children>
-                                <TextField fx:id="cloudStoragePath" editable="false" HBox.hgrow="ALWAYS">
+                                <TextField fx:id="directoryPathText" editable="false" HBox.hgrow="ALWAYS">
                                     <HBox.margin>
                                         <Insets />
                                     </HBox.margin>
                                 </TextField>
-                                <Button mnemonicParsing="false" prefWidth="50.0" text="Back">
+                                <Button onAction="#onBackButtonClick" mnemonicParsing="false" prefWidth="50.0" text="Back">
                                     <HBox.margin>
                                         <Insets />
                                     </HBox.margin>
                                 </Button>
                             </children>
                         </HBox>
-                        <ListView fx:id="cloudStorageFiles" prefHeight="360.0" prefWidth="250.0" VBox.vgrow="ALWAYS">
+                        <ListView fx:id="filesListView" onMouseClicked="#onMouseClickedOnListViewItem" prefHeight="360.0" prefWidth="250.0" VBox.vgrow="ALWAYS">
                      <VBox.margin>
                         <Insets />
                      </VBox.margin></ListView>
@@ -46,9 +48,22 @@
                 </VBox>
             </children>
         </HBox>
-        <HBox alignment="CENTER_RIGHT" prefHeight="40.0" prefWidth="640.0">
+        <HBox alignment="CENTER" prefHeight="40.0" prefWidth="640.0">
             <children>
-                <Button mnemonicParsing="false" onAction="#onExitButtonClick" prefWidth="100.0" text="Exit" />
+            <HBox alignment="CENTER_RIGHT" prefHeight="40.0" prefWidth="320.0">
+               <children>
+                  <HBox prefHeight="40.0" prefWidth="160.0">
+                     <children>
+                        <Text fx:id="fileSizeText" strokeType="OUTSIDE" strokeWidth="0.0" />
+                     </children>
+                  </HBox>
+               </children>
+            </HBox>
+            <HBox alignment="CENTER_RIGHT" prefHeight="40.0" prefWidth="320.0" HBox.hgrow="ALWAYS">
+               <children>
+                      <Button mnemonicParsing="false" onAction="#onExitButtonClick" prefWidth="100.0" text="Exit" />
+               </children>
+            </HBox>
             </children>
         </HBox>
     </children>
