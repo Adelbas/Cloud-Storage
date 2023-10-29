@@ -5,8 +5,17 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ReplayingDecoder;
 import ru.adel.Command;
 import ru.adel.CommandType;
-import ru.adel.decoder.impl.*;
+import ru.adel.decoder.impl.AuthRequestDecoder;
+import ru.adel.decoder.impl.AuthResponseDecoder;
+import ru.adel.decoder.impl.LogoutRequestDecoder;
+import ru.adel.decoder.impl.UnknownCmdDecoder;
+import ru.adel.decoder.impl.FilesGetRequestDecoder;
 import ru.adel.decoder.impl.FileDownloadRequestDecoder;
+import ru.adel.decoder.impl.FilesGetResponseDecoder;
+import ru.adel.decoder.impl.FileMessageDecoder;
+import ru.adel.decoder.impl.CreateFolderRequestDecoder;
+import ru.adel.decoder.impl.CopyPasteRequestDecoder;
+import ru.adel.decoder.impl.DeleteFileRequestDecoder;
 
 import java.util.EnumMap;
 import java.util.List;
