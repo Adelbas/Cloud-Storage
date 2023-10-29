@@ -5,6 +5,9 @@ import ru.adel.server.command.CommandHandler;
 import ru.adel.server.command.file.executors.*;
 import ru.adel.server.service.FileService;
 
+/**
+ * Class represents inheritor of {@link CommandHandler CommandHandler} that executes file commands and stores executor for each of them in EnumMap
+ */
 public class FileCommandHandler extends CommandHandler {
 
     /**

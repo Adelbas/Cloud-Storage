@@ -34,6 +34,9 @@ import java.util.stream.Collectors;
 @Slf4j
 public class CloudStorageController implements Initializable, CommandExecutor {
 
+    /**
+     * Map that contains executors of received commands
+     */
     private static final Map<CommandType, Consumer<Command>> commandsExecutors = new EnumMap<>(CommandType.class);
 
     {
@@ -49,7 +52,7 @@ public class CloudStorageController implements Initializable, CommandExecutor {
      */
     private static final String INITIAL_LOCAL_STORAGE_PATH = System.getProperty("user.home") + File.separator + "Desktop";
 
-    private static final String INITIAL_CLOUD_STORAGE_PATH = "%s";
+    private static final String USER_CLOUD_STORAGE_PATH = "%s";
 
     private static final String CLOUD_STORAGE_START_PATH = "";
 
@@ -99,15 +102,26 @@ public class CloudStorageController implements Initializable, CommandExecutor {
         sendGetFilesRequest(currentCloudStorageDirectory.toString());
     }
 
+    /**
+     * Method provides entering directory in cloud storage.
+     * It changes {@link CloudStorageController#currentCloudStorageDirectory} value and displaying path to user.
+     *
+     * @param path directory to enter
+     */
     private void enterDirectory(String path) {
         if (currentCloudStorageDirectory == null) {
             currentCloudStorageDirectory = new StringBuilder(path);
         } else {
             currentCloudStorageDirectory.append(File.separator).append(path);
         }
-        directoryPathText.setText(String.format(INITIAL_CLOUD_STORAGE_PATH, network.getUser()) + currentCloudStorageDirectory);
+        directoryPathText.setText(String.format(USER_CLOUD_STORAGE_PATH, network.getUser()) + currentCloudStorageDirectory);
     }
 
+    /**
+     * Sends {@link FilesGetRequest} to server to get files of directory
+     *
+     * @param directory directory to get files from
+     */
     private void sendGetFilesRequest(String directory) {
         FilesGetRequest filesGetRequest = FilesGetRequest.builder().directory(directory).build();
         network.sendCommand(filesGetRequest);
@@ -118,6 +132,12 @@ public class CloudStorageController implements Initializable, CommandExecutor {
         commandsExecutors.get(command.getCommandType()).accept(command);
     }
 
+    /**
+     * Handle {@link FilesGetResponse} command.
+     * Update {@link CloudStorageController#currentCloudStorageDirectoryFiles} and {@link CloudStorageController#filesListView}
+     *
+     * @param command FilesGetResponse command
+     */
     private void handleFilesGetResponse(Command command) {
         FilesGetResponse filesGetResponse = (FilesGetResponse) command;
         currentCloudStorageDirectoryFiles = filesGetResponse.getFiles().stream().collect(Collectors.toMap(File::getName, Function.identity()));
@@ -129,6 +149,12 @@ public class CloudStorageController implements Initializable, CommandExecutor {
         filesListView.getFocusModel().focus(-1);
     }
 
+    /**
+     * Handle {@link FileMessage} command.
+     * Save received command to current path.
+     *
+     * @param command FileMessage command
+     */
     private void handleFileMessage(Command command) {
         FileMessage fileMessage = (FileMessage) command;
 
@@ -154,6 +180,10 @@ public class CloudStorageController implements Initializable, CommandExecutor {
         ClientUtils.switchScene("login.fxml");
     }
 
+    /**
+     * Read bytes from chosen file and generate and send {@link FileMessage} command.
+     * Sends request to get updated files list of current directory.
+     */
     @FXML
     private void onUploadButtonClick() {
         File file = fileChooser.showOpenDialog(new Stage());
@@ -182,6 +212,9 @@ public class CloudStorageController implements Initializable, CommandExecutor {
         sendGetFilesRequest(currentCloudStorageDirectory.toString());
     }
 
+    /**
+     * Generate and send {@link FileMessage} command to server
+     */
     @FXML
     private void onDownloadButtonClick() {
         String filename = filesListView.getSelectionModel().getSelectedItem();
@@ -200,10 +233,20 @@ public class CloudStorageController implements Initializable, CommandExecutor {
         }
     }
 
+    /**
+     * Checks if file is directory
+     *
+     * @param filename file to check
+     * @return true if it is, false else
+     */
     private boolean isDirectory(String filename) {
         return currentCloudStorageDirectoryFiles.get(filename).isDirectory();
     }
 
+    /**
+     * Create new item in {@link CloudStorageController#filesListView} and suggests to edit name of it.
+     * Generate {@link CreateFolderRequest} with input name and send it to server.
+     */
     @FXML
     private void onNewFolderButtonClick() {
         filesListView.setCellFactory(TextFieldListCell.forListView());
@@ -226,6 +269,12 @@ public class CloudStorageController implements Initializable, CommandExecutor {
         });
     }
 
+    /**
+     * If count of clicks is 1 show file size if file is not directory.
+     * If count of clicks if 2 enter the directory if file is directory.
+     *
+     * @param mouseEvent mouseEvent
+     */
     @FXML
     private void onMouseClickedOnListViewItem(MouseEvent mouseEvent) {
         String selectedFile = filesListView.getSelectionModel().getSelectedItem();
@@ -250,6 +299,9 @@ public class CloudStorageController implements Initializable, CommandExecutor {
         }
     }
 
+    /**
+     * Moves to parent directory of {@link CloudStorageController#currentCloudStorageDirectory} if it's possible
+     */
     @FXML
     private void onBackButtonClick() {
         int lastSeparatorIndex = currentCloudStorageDirectory.lastIndexOf(File.separator);
@@ -258,13 +310,17 @@ public class CloudStorageController implements Initializable, CommandExecutor {
         }
 
         currentCloudStorageDirectory = new StringBuilder(currentCloudStorageDirectory.substring(0, lastSeparatorIndex));
-        directoryPathText.setText(String.format(INITIAL_CLOUD_STORAGE_PATH, network.getUser()) + currentCloudStorageDirectory);
+        directoryPathText.setText(String.format(USER_CLOUD_STORAGE_PATH, network.getUser()) + currentCloudStorageDirectory);
         sendGetFilesRequest(currentCloudStorageDirectory.toString());
     }
 
+    /**
+     * If file is selected, and it is not a directory saves filename and directory to {@link CloudStorageController#copyPasteRequest}
+     */
     @FXML
     private void onCopyButtonClick() {
-        if (filesListView.getSelectionModel().getSelectedItem() == null) {
+        String filename = filesListView.getSelectionModel().getSelectedItem();
+        if (filename == null || isDirectory(filename)) {
             return;
         }
         copyPasteRequest = CopyPasteRequest.builder()
@@ -273,6 +329,9 @@ public class CloudStorageController implements Initializable, CommandExecutor {
                 .build();
     }
 
+    /**
+     * If some file was copied sends {@link CopyPasteRequest} to server
+     */
     @FXML
     private void onPasteButtonClick() {
         if (copyPasteRequest == null) {
@@ -284,6 +343,9 @@ public class CloudStorageController implements Initializable, CommandExecutor {
         sendGetFilesRequest(currentCloudStorageDirectory.toString());
     }
 
+    /**
+     * If file or directory is selected sends {@link DeleteFileRequest} to server
+     */
     @FXML
     private void onDeleteButtonClick() {
         String filename = filesListView.getSelectionModel().getSelectedItem();

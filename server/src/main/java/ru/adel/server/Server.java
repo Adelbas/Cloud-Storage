@@ -21,9 +21,6 @@ import ru.adel.server.service.AuthenticationService;
 import ru.adel.server.service.ChannelStorageService;
 import ru.adel.server.service.FileService;
 
-import java.io.File;
-import java.nio.file.Paths;
-
 /**
  * Class that represents server starting
  */

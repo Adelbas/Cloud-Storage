@@ -5,7 +5,17 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import ru.adel.Command;
 import ru.adel.CommandType;
-import ru.adel.encoder.impl.*;
+import ru.adel.encoder.impl.AuthRequestEncoder;
+import ru.adel.encoder.impl.AuthResponseEncoder;
+import ru.adel.encoder.impl.LogoutRequestEncoder;
+import ru.adel.encoder.impl.UnknownCmdEncoder;
+import ru.adel.encoder.impl.FileMessageEncoder;
+import ru.adel.encoder.impl.FilesGetRequestEncoder;
+import ru.adel.encoder.impl.FilesGetResponseEncoder;
+import ru.adel.encoder.impl.FileDownloadRequestEncoder;
+import ru.adel.encoder.impl.CopyPasteRequestEncoder;
+import ru.adel.encoder.impl.CreateFolderRequestEncoder;
+import ru.adel.encoder.impl.DeleteFileRequestEncoder;
 
 import java.util.EnumMap;
 import java.util.Map;
