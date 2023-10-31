@@ -1,12 +1,17 @@
 package ru.adel.client.controller;
 
+import io.netty.handler.stream.ChunkedWriteHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
 import ru.adel.Command;
@@ -27,6 +32,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import io.netty.handler.stream.ChunkedFile;
+
 /**
  * Class represents JavaFx controller of cloud storage page.
  * Implements CommandExecutor to execute received commands from server at cloud storage page.
@@ -42,9 +49,8 @@ public class CloudStorageController implements Initializable, CommandExecutor {
     {
         commandsExecutors.put(CommandType.FILES_GET_RESPONSE, this::handleFilesGetResponse);
         commandsExecutors.put(CommandType.FILE_MESSAGE, this::handleFileMessage);
+        commandsExecutors.put(CommandType.END_LARGE_FILE_TRANSFER, this::handleEndLargeFileTransfer);
     }
-
-    private static final int MAX_BUFFER_SIZE = 100000000;
 
     /**
      * Files from this directory are displayed to user on file chooser window.
@@ -70,6 +76,11 @@ public class CloudStorageController implements Initializable, CommandExecutor {
 
     private static final long MEGABYTE = 1L << 10 << 10;
 
+    /**
+     * If file size is larger than this, file will be sent using {@link ChunkedWriteHandler}
+     */
+    private static final long LARGE_FILE_START_SIZE = MEGABYTE;
+
     private Network network;
 
     private FileChooser fileChooser;
@@ -90,6 +101,10 @@ public class CloudStorageController implements Initializable, CommandExecutor {
 
     @FXML
     private Text fileSizeText;
+
+    private Stage progressBarStage;
+
+    private ProgressBar progressBar;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -168,6 +183,12 @@ public class CloudStorageController implements Initializable, CommandExecutor {
         }
     }
 
+    private void handleEndLargeFileTransfer(Command command) {
+        EndLargeFileTransfer endLargeFileTransfer = (EndLargeFileTransfer) command;
+        network.tearDownLargeFileUploadConfiguration();
+        sendGetFilesRequest(currentCloudStorageDirectory.toString());
+    }
+
     /**
      * Creates logout request and sends it to server.
      * Calls {@link Network#disconnect() disconnect} method to disconnect from server.
@@ -181,8 +202,9 @@ public class CloudStorageController implements Initializable, CommandExecutor {
     }
 
     /**
-     * Read bytes from chosen file and generate and send {@link FileMessage} command.
-     * Sends request to get updated files list of current directory.
+     * Gets file user choose to upload and checks file size.
+     * If file size is small sends file using {@link CloudStorageController#sendSmallFile} method
+     * else sends large file using {@link CloudStorageController#sendLargeFile} method.
      */
     @FXML
     private void onUploadButtonClick() {
@@ -192,6 +214,20 @@ public class CloudStorageController implements Initializable, CommandExecutor {
             return;
         }
 
+        if (file.length() < LARGE_FILE_START_SIZE) {
+            sendSmallFile(file);
+        } else {
+            sendLargeFile(file);
+        }
+    }
+
+    /**
+     * Read bytes from chosen file and generate and send {@link FileMessage} command.
+     * Sends request to get updated files list of current directory.
+     *
+     * @param file file to send
+     */
+    private void sendSmallFile(File file) {
         byte[] data = new byte[(int) file.length()];
 
         int read;
@@ -213,7 +249,36 @@ public class CloudStorageController implements Initializable, CommandExecutor {
     }
 
     /**
-     * Generate and send {@link FileMessage} command to server
+     * Generates and send {@link StartLargeFileUpload} command to server
+     * and run {@link Network#setUpLargeFileUploadConfiguration setUpLargeFileUploadConfiguration}.
+     * Sends large file to server chunk by chunk using {@link ChunkedWriteHandler}
+     *
+     * @param file file to send
+     */
+    private void sendLargeFile(File file) {
+        network.sendCommand(StartLargeFileUpload.builder()
+                .size(file.length())
+                .filename(file.getName())
+                .directory(currentCloudStorageDirectory.toString())
+                .build());
+
+        try {
+            ChunkedFile chunkedFile = new ChunkedFile(file);
+
+            setUpProgressBar();
+            network.setUpLargeFileUploadConfiguration(progressBar, file.length(), progressBarStage);
+            network.getChannel().writeAndFlush(chunkedFile);
+        } catch (IOException e) {
+            log.error("Error uploading large file {}: {}", file.getName(), e.getMessage());
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Checks chosen file size.
+     * If file size is small generates and send {@link FileDownloadRequest} command to server,
+     * else generates and send {@link StartLargeFileDownload} command to server
+     * and run {@link Network#setUpLargeFileDownloadConfiguration setUpLargeFileDownloadConfiguration}.
      */
     @FXML
     private void onDownloadButtonClick() {
@@ -225,12 +290,50 @@ public class CloudStorageController implements Initializable, CommandExecutor {
         fileChooser.setInitialFileName(filename);
         fileToDownload = fileChooser.showSaveDialog(new Stage());
 
-        if (fileToDownload != null) {
+        if (fileToDownload == null) {
+            return;
+        }
+
+        long fileToDownloadSize = currentCloudStorageDirectoryFiles.get(filename).length();
+        if (fileToDownloadSize < MEGABYTE) {
             FileDownloadRequest fileDownloadRequest = FileDownloadRequest.builder()
                     .filePath(currentCloudStorageDirectory + File.separator + filename)
                     .build();
             network.sendCommand(fileDownloadRequest);
+        } else {
+            StartLargeFileDownload startLargeFileDownload = StartLargeFileDownload.builder()
+                    .filePath(currentCloudStorageDirectory + File.separator + filename)
+                    .build();
+
+            setUpProgressBar();
+            network.setUpLargeFileDownloadConfiguration(fileToDownload, fileToDownloadSize, progressBar, progressBarStage);
+            network.sendCommand(startLargeFileDownload);
         }
+    }
+
+    /**
+     * Sets up new stage to display progress bar for user while file transfer
+     */
+    private void setUpProgressBar() {
+        progressBar = new ProgressBar();
+        progressBar.setProgress(0);
+
+        progressBarStage = new Stage();
+        progressBarStage.setResizable(false);
+        progressBarStage.initModality(Modality.APPLICATION_MODAL);
+
+        final Label label = new Label();
+        label.setText("File transfer");
+
+        final VBox vBox = new VBox();
+        vBox.setPrefSize(300, 150);
+        vBox.setSpacing(10);
+        vBox.setAlignment(Pos.CENTER);
+        vBox.getChildren().addAll(label, progressBar);
+
+        Scene scene = new Scene(vBox);
+        progressBarStage.setScene(scene);
+        progressBarStage.show();
     }
 
     /**

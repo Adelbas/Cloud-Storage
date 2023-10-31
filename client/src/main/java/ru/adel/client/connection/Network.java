@@ -6,16 +6,22 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.stream.ChunkedWriteHandler;
 import javafx.concurrent.Task;
+import javafx.scene.control.ProgressBar;
+import javafx.stage.Stage;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import ru.adel.Command;
 import ru.adel.client.command.CommandExecutor;
 import ru.adel.client.handler.ClientHandler;
+import ru.adel.client.handler.LargeFileDownloadHandler;
+import ru.adel.client.handler.ProgressHandler;
 import ru.adel.decoder.CommandDecoder;
 import ru.adel.encoder.CommandEncoder;
 
+import java.io.File;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -121,6 +127,48 @@ public class Network {
             connect();
         }
         channel.writeAndFlush(cmd);
+    }
+
+    /**
+     * Sets up large file upload configuration.
+     * Removes {@link CommandEncoder} from pipeline.
+     * Adds {@link ProgressHandler} and {@link ChunkedWriteHandler} to pipeline.
+     *
+     * @param progressBar progress bar to update
+     * @param fileSize full file size that will be sent
+     * @param progressBarStage stage with progress bar
+     */
+    public void setUpLargeFileUploadConfiguration(ProgressBar progressBar, long fileSize, Stage progressBarStage) {
+        channel.pipeline().remove(CommandEncoder.class);
+        channel.pipeline().addLast(new ProgressHandler(progressBar, progressBarStage, fileSize));
+        channel.pipeline().addLast(new ChunkedWriteHandler());
+    }
+
+    public void tearDownLargeFileUploadConfiguration() {
+        channel.pipeline().remove(ChunkedWriteHandler.class);
+        channel.pipeline().remove(ProgressHandler.class);
+        channel.pipeline().addFirst(new CommandEncoder());
+    }
+
+    /**
+     * Sets up large file download configuration.
+     * Removes {@link CommandDecoder} from pipeline.
+     * Adds {@link ProgressHandler} and {@link LargeFileDownloadHandler} to pipeline.
+     *
+     * @param createdFile file to save received chunks
+     * @param expectedSize full file size that will be received
+     * @param progressBar progress bar to update
+     * @param progressBarStage stage with progress bar
+     */
+    public void setUpLargeFileDownloadConfiguration(File createdFile, long expectedSize, ProgressBar progressBar, Stage progressBarStage) {
+        channel.pipeline().remove(CommandDecoder.class);
+        channel.pipeline().addLast(new ProgressHandler(progressBar, progressBarStage, expectedSize));
+        channel.pipeline().addLast(new LargeFileDownloadHandler(createdFile, expectedSize, this));
+    }
+
+    public void tearDownLargeFileDownloadConfiguration() {
+        channel.pipeline().remove(LargeFileDownloadHandler.class);
+        channel.pipeline().addFirst(new CommandDecoder());
     }
 }
 

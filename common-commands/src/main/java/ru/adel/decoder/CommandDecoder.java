@@ -5,17 +5,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ReplayingDecoder;
 import ru.adel.Command;
 import ru.adel.CommandType;
-import ru.adel.decoder.impl.AuthRequestDecoder;
-import ru.adel.decoder.impl.AuthResponseDecoder;
-import ru.adel.decoder.impl.LogoutRequestDecoder;
-import ru.adel.decoder.impl.UnknownCmdDecoder;
-import ru.adel.decoder.impl.FilesGetRequestDecoder;
-import ru.adel.decoder.impl.FileDownloadRequestDecoder;
-import ru.adel.decoder.impl.FilesGetResponseDecoder;
-import ru.adel.decoder.impl.FileMessageDecoder;
-import ru.adel.decoder.impl.CreateFolderRequestDecoder;
-import ru.adel.decoder.impl.CopyPasteRequestDecoder;
-import ru.adel.decoder.impl.DeleteFileRequestDecoder;
+import ru.adel.decoder.impl.*;
 
 import java.util.EnumMap;
 import java.util.List;
@@ -44,6 +34,9 @@ public class CommandDecoder extends ReplayingDecoder<Command> {
         commandDecoders.put(CommandType.CREATE_FOLDER_REQUEST, new CreateFolderRequestDecoder());
         commandDecoders.put(CommandType.COPY_PASTE_REQUEST, new CopyPasteRequestDecoder());
         commandDecoders.put(CommandType.DELETE_FILE_REQUEST, new DeleteFileRequestDecoder());
+        commandDecoders.put(CommandType.START_LARGE_FILE_UPLOAD, new StartLargeFileUploadDecoder());
+        commandDecoders.put(CommandType.START_LARGE_FILE_DOWNLOAD, new StartLargeFileDownloadDecoder());
+        commandDecoders.put(CommandType.END_LARGE_FILE_TRANSFER, new EndLargeFileTransferDecoder());
     }
 
     @Override

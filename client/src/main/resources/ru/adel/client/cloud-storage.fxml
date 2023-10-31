@@ -15,7 +15,6 @@
             <children>
                 <VBox alignment="CENTER" maxWidth="1.7976931348623157E308" prefHeight="380.0" prefWidth="140.0" spacing="30.0">
                     <children>
-                  <ProgressBar prefHeight="18.0" prefWidth="101.0" progress="0.18" />
                         <Button mnemonicParsing="false" onAction="#onUploadButtonClick" prefWidth="100.0" text="Upload &gt;&gt;" />
                         <Button mnemonicParsing="false" onAction="#onDownloadButtonClick" prefWidth="100.0" text="&lt;&lt; Download" />
                         <Button mnemonicParsing="false" onAction="#onNewFolderButtonClick" prefWidth="100.0" text="New Folder" />

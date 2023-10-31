@@ -1,12 +1,15 @@
 package ru.adel.server.service;
 
+import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import ru.adel.command.FileMessage;
+import ru.adel.server.entity.LargeFileInfo;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -195,6 +198,72 @@ public class FileService {
             log.error("Error deleting file {}", filePath);
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Prepares and sets large file params for current channel in {@link ChannelStorageService}
+     *
+     * @param channel       current channel
+     * @param largeFileInfo received large file params from channel
+     */
+    public void setLargeFileInfo(Channel channel, LargeFileInfo largeFileInfo) {
+        String filename = largeFileInfo.getFilename().substring(0, largeFileInfo.getFilename().lastIndexOf("."));
+        String fileExtension = largeFileInfo.getFilename().substring(largeFileInfo.getFilename().lastIndexOf("."));
+
+        String directory = getUserStorageDirectory(channel) + File.separator + largeFileInfo.getDirectory();
+        Path directoryPath = Path.of(directory);
+
+        if (Files.notExists(directoryPath)) {
+            directoryPath.toFile().mkdirs();
+        }
+
+        String filePath = getActualFilePath(directoryPath.toString(), filename, fileExtension);
+
+        String actualFilename = filePath.substring(filePath.lastIndexOf(File.separator) + 1);
+        log.info("Started saving large file {} in {} from channel {}", actualFilename, directoryPath, channel.id());
+
+        largeFileInfo.setFilename(actualFilename);
+        largeFileInfo.setDirectory(filePath);
+        channelStorageService.addLargeFileInfo(channel, largeFileInfo);
+    }
+
+    /**
+     * Saves received file chunk to current channel large file
+     *
+     * @param channel current channel
+     * @param byteBuf file chunk
+     */
+    public void saveLargeFilePartNew(Channel channel, ByteBuf byteBuf) throws IOException {
+        LargeFileInfo largeFileInfo = channelStorageService.getLargeFileInfo(channel);
+
+        File savingFile = new File(largeFileInfo.getDirectory());
+
+        ByteBuffer byteBuffer = byteBuf.nioBuffer();
+        RandomAccessFile randomAccessFile = new RandomAccessFile(savingFile, "rw");
+        FileChannel fileChannel = randomAccessFile.getChannel();
+
+        while (byteBuffer.hasRemaining()) {
+            fileChannel.position(savingFile.length());
+            fileChannel.write(byteBuffer);
+        }
+
+        byteBuf.release();
+        fileChannel.close();
+        randomAccessFile.close();
+    }
+
+    /**
+     * Checks if all received hunks is saved
+     *
+     * @param channel current channel
+     * @return true if saved large file size is equal to expected size, else false
+     */
+    public boolean isLargeFileSavingCompleted(Channel channel) {
+        LargeFileInfo largeFileInfo = channelStorageService.getLargeFileInfo(channel);
+
+        File file = new File(largeFileInfo.getDirectory());
+
+        return file.length() == largeFileInfo.getSize();
     }
 }
 

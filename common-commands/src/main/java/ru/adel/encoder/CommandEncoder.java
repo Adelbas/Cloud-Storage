@@ -5,17 +5,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import ru.adel.Command;
 import ru.adel.CommandType;
-import ru.adel.encoder.impl.AuthRequestEncoder;
-import ru.adel.encoder.impl.AuthResponseEncoder;
-import ru.adel.encoder.impl.LogoutRequestEncoder;
-import ru.adel.encoder.impl.UnknownCmdEncoder;
-import ru.adel.encoder.impl.FileMessageEncoder;
-import ru.adel.encoder.impl.FilesGetRequestEncoder;
-import ru.adel.encoder.impl.FilesGetResponseEncoder;
-import ru.adel.encoder.impl.FileDownloadRequestEncoder;
-import ru.adel.encoder.impl.CopyPasteRequestEncoder;
-import ru.adel.encoder.impl.CreateFolderRequestEncoder;
-import ru.adel.encoder.impl.DeleteFileRequestEncoder;
+import ru.adel.encoder.impl.*;
 
 import java.util.EnumMap;
 import java.util.Map;
@@ -43,6 +33,9 @@ public class CommandEncoder extends MessageToByteEncoder<Command> {
         commandEncoders.put(CommandType.CREATE_FOLDER_REQUEST, new CreateFolderRequestEncoder());
         commandEncoders.put(CommandType.COPY_PASTE_REQUEST, new CopyPasteRequestEncoder());
         commandEncoders.put(CommandType.DELETE_FILE_REQUEST, new DeleteFileRequestEncoder());
+        commandEncoders.put(CommandType.START_LARGE_FILE_UPLOAD, new StartLargeFileUploadEncoder());
+        commandEncoders.put(CommandType.START_LARGE_FILE_DOWNLOAD, new StartLargeFileDownloadEncoder());
+        commandEncoders.put(CommandType.END_LARGE_FILE_TRANSFER, new EndLargeFileTransferEncoder());
     }
 
     @Override

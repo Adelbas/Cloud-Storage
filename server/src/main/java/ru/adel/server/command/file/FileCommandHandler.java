@@ -22,5 +22,8 @@ public class FileCommandHandler extends CommandHandler {
         this.executors.put(CommandType.CREATE_FOLDER_REQUEST, new CreateFolderRequestExecutor(fileService));
         this.executors.put(CommandType.COPY_PASTE_REQUEST, new CopyPasteRequestExecutor(fileService));
         this.executors.put(CommandType.DELETE_FILE_REQUEST, new DeleteFileRequestExecutor(fileService));
+        this.executors.put(CommandType.START_LARGE_FILE_UPLOAD, new StartLargeFileUploadExecutor(fileService));
+        this.executors.put(CommandType.START_LARGE_FILE_DOWNLOAD, new StartLargeFileDownloadExecutor(fileService));
+        this.executors.put(CommandType.END_LARGE_FILE_TRANSFER, new EndLargeFileTransferExecutor());
     }
 }
