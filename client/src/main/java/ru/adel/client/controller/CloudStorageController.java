@@ -3,15 +3,11 @@ package ru.adel.client.controller;
 import io.netty.handler.stream.ChunkedWriteHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.geometry.Pos;
-import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldListCell;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
-import javafx.stage.Modality;
 import javafx.stage.Stage;
 import lombok.extern.slf4j.Slf4j;
 import ru.adel.Command;
@@ -101,10 +97,6 @@ public class CloudStorageController implements Initializable, CommandExecutor {
 
     @FXML
     private Text fileSizeText;
-
-    private Stage progressBarStage;
-
-    private ProgressBar progressBar;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -265,8 +257,7 @@ public class CloudStorageController implements Initializable, CommandExecutor {
         try {
             ChunkedFile chunkedFile = new ChunkedFile(file);
 
-            setUpProgressBar();
-            network.setUpLargeFileUploadConfiguration(progressBar, file.length(), progressBarStage);
+            network.setUpLargeFileUploadConfiguration(file.length());
             network.getChannel().writeAndFlush(chunkedFile);
         } catch (IOException e) {
             log.error("Error uploading large file {}: {}", file.getName(), e.getMessage());
@@ -295,45 +286,27 @@ public class CloudStorageController implements Initializable, CommandExecutor {
         }
 
         long fileToDownloadSize = currentCloudStorageDirectoryFiles.get(filename).length();
-        if (fileToDownloadSize < MEGABYTE) {
-            FileDownloadRequest fileDownloadRequest = FileDownloadRequest.builder()
-                    .filePath(currentCloudStorageDirectory + File.separator + filename)
-                    .build();
-            network.sendCommand(fileDownloadRequest);
+        if (fileToDownloadSize < LARGE_FILE_START_SIZE) {
+            downloadSmallFile(currentCloudStorageDirectory.toString(), filename);
         } else {
-            StartLargeFileDownload startLargeFileDownload = StartLargeFileDownload.builder()
-                    .filePath(currentCloudStorageDirectory + File.separator + filename)
-                    .build();
-
-            setUpProgressBar();
-            network.setUpLargeFileDownloadConfiguration(fileToDownload, fileToDownloadSize, progressBar, progressBarStage);
-            network.sendCommand(startLargeFileDownload);
+            downloadLargeFile(currentCloudStorageDirectory.toString(), filename, fileToDownloadSize);
         }
     }
 
-    /**
-     * Sets up new stage to display progress bar for user while file transfer
-     */
-    private void setUpProgressBar() {
-        progressBar = new ProgressBar();
-        progressBar.setProgress(0);
+    private void downloadSmallFile(String directory, String filename) {
+        FileDownloadRequest fileDownloadRequest = FileDownloadRequest.builder()
+                .filePath(directory + File.separator + filename)
+                .build();
+        network.sendCommand(fileDownloadRequest);
+    }
 
-        progressBarStage = new Stage();
-        progressBarStage.setResizable(false);
-        progressBarStage.initModality(Modality.APPLICATION_MODAL);
+    private void downloadLargeFile(String directory, String filename, long fileSize) {
+        StartLargeFileDownload startLargeFileDownload = StartLargeFileDownload.builder()
+                .filePath(directory + File.separator + filename)
+                .build();
 
-        final Label label = new Label();
-        label.setText("File transfer");
-
-        final VBox vBox = new VBox();
-        vBox.setPrefSize(300, 150);
-        vBox.setSpacing(10);
-        vBox.setAlignment(Pos.CENTER);
-        vBox.getChildren().addAll(label, progressBar);
-
-        Scene scene = new Scene(vBox);
-        progressBarStage.setScene(scene);
-        progressBarStage.show();
+        network.setUpLargeFileDownloadConfiguration(fileToDownload, fileSize);
+        network.sendCommand(startLargeFileDownload);
     }
 
     /**

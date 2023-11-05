@@ -62,7 +62,7 @@ public class LargeFileDownloadHandler extends ChannelInboundHandlerAdapter {
         RandomAccessFile randomAccessFile = new RandomAccessFile(createdFile, "rw");
         FileChannel fileChannel = randomAccessFile.getChannel();
 
-        while (byteBuffer.hasRemaining()){;
+        while (byteBuffer.hasRemaining()){
             fileChannel.position(createdFile.length());
             fileChannel.write(byteBuffer);
         }
