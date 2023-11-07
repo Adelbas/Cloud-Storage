@@ -5,6 +5,7 @@ import javafx.scene.Scene;
 import lombok.extern.slf4j.Slf4j;
 import ru.adel.client.ClientApplication;
 import ru.adel.client.connection.Network;
+import ru.adel.client.handler.ClientHandler;
 
 import java.io.IOException;
 
@@ -18,15 +19,19 @@ public class ClientUtils {
      * Method create new scene from file and sets it to primary stage.
      * Also sets loaded scene's controller to Network instance.
      *
-     * @throws RuntimeException if fxml file with given name was not found
      * @param fxmlFileName filename of the scene to switch to
+     * @throws RuntimeException if fxml file with given name was not found
      */
     public static void switchScene(String fxmlFileName) {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(ClientApplication.class.getResource(fxmlFileName));
             Scene scene = new Scene(fxmlLoader.load());
             ClientApplication.primaryStage.setScene(scene);
-            Network.getInstance().setCommandExecutor(fxmlLoader.getController());
+            if (Network.getInstance().getChannel().pipeline().get(ClientHandler.class) != null) {
+                Network.getInstance().getChannel().pipeline().get(ClientHandler.class).setCommandExecutor(fxmlLoader.getController());
+            } else {
+                Network.getInstance().setCommandExecutor(fxmlLoader.getController());
+            }
         } catch (IOException e) {
             log.warn("Exception caught while switching scenes " + e);
             throw new RuntimeException(e);

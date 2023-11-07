@@ -3,6 +3,8 @@ module ru.adel.client {
     requires javafx.fxml;
     requires io.netty.transport;
     requires io.netty.codec;
+    requires io.netty.handler;
+    requires io.netty.buffer;
     requires static lombok;
     requires org.slf4j;
     requires org.slf4j.simple;

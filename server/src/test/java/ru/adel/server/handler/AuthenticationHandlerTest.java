@@ -8,7 +8,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import ru.adel.Command;
-import ru.adel.server.command.security.SecurityCommandService;
+import ru.adel.server.command.CommandHandler;
 import ru.adel.server.service.ChannelStorageService;
 
 import static org.mockito.Mockito.*;
@@ -17,7 +17,7 @@ import static org.mockito.Mockito.*;
 class AuthenticationHandlerTest {
 
     @Mock
-    private SecurityCommandService securityCommandService;
+    private CommandHandler securityCommandService;
 
     @Mock
     private ChannelStorageService channelStorageService;
@@ -32,7 +32,7 @@ class AuthenticationHandlerTest {
         Command command = mock(Command.class);
         when(ctx.channel()).thenReturn(channel);
         when(channelStorageService.isChannelAuthenticated(channel)).thenReturn(true);
-        when(securityCommandService.isSecurityCommand(command)).thenReturn(false);
+        when(securityCommandService.isBelongsToHandler(command)).thenReturn(false);
 
         authenticationHandler.channelRead0(ctx, command);
         verify(ctx).fireChannelRead(command);

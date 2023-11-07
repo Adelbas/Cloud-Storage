@@ -5,10 +5,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ReplayingDecoder;
 import ru.adel.Command;
 import ru.adel.CommandType;
-import ru.adel.decoder.impl.AuthRequestDecoder;
-import ru.adel.decoder.impl.AuthResponseDecoder;
-import ru.adel.decoder.impl.LogoutRequestDecoder;
-import ru.adel.decoder.impl.UnknownCmdDecoder;
+import ru.adel.decoder.impl.*;
 
 import java.util.EnumMap;
 import java.util.List;
@@ -30,10 +27,20 @@ public class CommandDecoder extends ReplayingDecoder<Command> {
         commandDecoders.put(CommandType.AUTHENTICATE_RESPONSE, new AuthResponseDecoder());
         commandDecoders.put(CommandType.LOGOUT_REQUEST, new LogoutRequestDecoder());
         commandDecoders.put(CommandType.UNKNOWN_COMMAND_RESPONSE, new UnknownCmdDecoder());
+        commandDecoders.put(CommandType.FILES_GET_REQUEST, new FilesGetRequestDecoder());
+        commandDecoders.put(CommandType.FILES_GET_RESPONSE, new FilesGetResponseDecoder());
+        commandDecoders.put(CommandType.FILE_MESSAGE, new FileMessageDecoder());
+        commandDecoders.put(CommandType.FILE_DOWNLOAD_REQUEST, new FileDownloadRequestDecoder());
+        commandDecoders.put(CommandType.CREATE_FOLDER_REQUEST, new CreateFolderRequestDecoder());
+        commandDecoders.put(CommandType.COPY_PASTE_REQUEST, new CopyPasteRequestDecoder());
+        commandDecoders.put(CommandType.DELETE_FILE_REQUEST, new DeleteFileRequestDecoder());
+        commandDecoders.put(CommandType.START_LARGE_FILE_UPLOAD, new StartLargeFileUploadDecoder());
+        commandDecoders.put(CommandType.START_LARGE_FILE_DOWNLOAD, new StartLargeFileDownloadDecoder());
+        commandDecoders.put(CommandType.END_LARGE_FILE_TRANSFER, new EndLargeFileTransferDecoder());
     }
 
     @Override
-    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) {
+    protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
         if (in == null) {
             return;
         }
