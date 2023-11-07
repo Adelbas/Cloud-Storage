@@ -18,7 +18,7 @@ public class FilesGetResponseDecoder implements Decoder {
         int filesCount = in.readInt();
         List<File> files = new ArrayList<>(filesCount);
 
-        for (int i =0; i<filesCount; i++) {
+        for (int i = 0; i < filesCount; i++) {
             int size = in.readInt();
             byte[] data = new byte[size];
 
